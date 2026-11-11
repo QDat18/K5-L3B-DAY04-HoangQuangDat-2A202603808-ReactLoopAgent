@@ -37,7 +37,7 @@ Nguyên nhân có thể:
 
 - Sửa gì, ở đâu (trong `agent.py`):
   1. **System prompt**: thêm chỉ dẫn đọc incident được trỏ tới, chỉ nêu ngày giờ và nguyên nhân có trong tool result, nêu rõ khi dữ liệu `truncated`, không suy ra nguyên nhân chung khi tool không nêu, dẫn URL riêng cho từng incident.
-  2. **Kiểm tra nguồn (Bài 4)**: lưu `url` từ `get_incident_details` thành công. Nếu câu trả lời cuối không chứa URL nào thì ghi event `validation_missing_source` và yêu cầu model sửa trong `max_steps`. Hết lượt thì trả `max_steps`, không báo `completed`.
+  2. **Kiểm tra nguồn**: lưu `url` từ `get_incident_details` thành công. Nếu câu trả lời cuối không chứa URL nào thì ghi event `validation_missing_source` và yêu cầu model sửa trong `max_steps`. Hết lượt thì trả `max_steps`, không báo `completed`.
   3. **Kiểm tra tham chiếu chưa đọc**: sau mỗi `get_incident_details`, quét `/incidents/<id>` trong nội dung update. Khi model định trả lời cuối mà còn ID chưa đọc, ghi event `validation_unvisited_reference` và nhắc model gọi tool cho các ID đó, rồi trả lời đầy đủ câu hỏi ban đầu. Mỗi ID chỉ nhắc một lần, và chỉ khi còn lượt.
   4. **Kiểm tra nguồn từng phần**: nếu câu trả lời có một số URL nhưng thiếu URL của incident khác đã đọc, nhắc đúng một lần (event `validation_partial_sources`).
 - Vì sao chọn thay đổi này: lỗi của H1 là agent dừng quá sớm và dẫn nguồn thiếu. Cách sửa chỉ bằng prompt đã được thử và không đủ, nên chuyển sang ràng buộc trong loop. Các cơ chế không hard-code ID hay câu trả lời nào, chỉ dựa trên dữ liệu trong tool result. Cơ chế nhắc đúng một lần để tránh vòng lặp vô hạn và tránh đẩy các case khác vào `max_steps`.
